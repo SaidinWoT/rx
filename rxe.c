@@ -42,17 +42,18 @@ inline void rrx(char *n, char l) {
     }
 }
 
-void lrxen(char *n) { rxen(n, MAXBITS, lrx); }
-void rrxen(char *n) { rxen(n, MAXBITS, rrx); }
-void lrxde(char *n) { rxde(n, 1, lrx); }
-void rrxde(char *n) { rxde(n, 1, rrx); }
+inline void lrxen(char *n) { rxen(n, MAXBITS, lrx); }
+inline void rrxen(char *n) { rxen(n, MAXBITS, rrx); }
+inline void lrxde(char *n) { rxde(n, 1, lrx); }
+inline void rrxde(char *n) { rxde(n, 1, rrx); }
 
 void encrypt(char *in, char *out, char *key) {
-    int i, j;
+    int i, j, len;
     for(j = 0; j < 8; ++j) {
         out[j] = in[j];
     }
-    for(i = 0; i < strlen(key); ++i) {
+    len = strlen(key);
+    for(i = 0; i < len; ++i) {
         for(j = 0; j < 8; ++j) {
             if((key[i] >> j) & 1) {
                 out[j] ^= key[i];
