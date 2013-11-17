@@ -2,50 +2,82 @@
 #include <stdio.h>
 #include <string.h>
 
-void rxen(char *n, char l, void (*fn)(char *, char)) {
+inline void srx(char *n, char l, void (*fn)(char *, char)) {
     if(!(l >>= 1)) {
         return;
     }
     (*fn)(n, l);
-    rxen(n, l, fn);
+    srx(n, l, fn);
 }
 
-void rxde(char *n, char l, void (*fn)(char *, char)) {
+inline void grx(char *n, char l, void (*fn)(char *, char)) {
     if(l >= MAXBITS) {
         return;
     }
     (*fn)(n, l);
-    rxde(n, l << 1, fn);
+    grx(n, l << 1, fn);
 }
 
-inline void lrx(char *n, char l) {
+inline void ll(char *n, char l) {
     unsigned char m;
     if(l < 8) {
-        m = ((1 << l) - 1) << (8 - 2*l);
-        *n = (*n&~m)|((*n^((*n&(m<<l))>>l))&m);
+        m = ((1 << l) - 1) << (8 - l);
+        *n = (*n&~m)|((*n^((*n&(m>>l))<<l))&m);
     } else {
-        for(m = 0; m < l/8; ++m) {
-            n[m+l/8] ^= n[m];
+        l /= 8;
+        for(m = 0; m < l; ++m) {
+            n[m] ^= n[m+l];
         }
     }
 }
 
-inline void rrx(char *n, char l) {
+inline void rl(char *n, char l) {
     unsigned char m;
     if(l < 8) {
         m = ((1 << l) - 1) << l;
         *n = (*n&~m)|((*n^((*n&(m>>l))<<l))&m);
     } else {
-        for(m = 0; m < l/8; ++m) {
-            n[m] ^= n[m+l/8];
+        l /= 8;
+        for(m = 8 - 2*l; m < 8 - l; ++m) {
+            n[m] ^= n[m+l];
         }
     }
 }
 
-inline void lrxen(char *n) { rxen(n, MAXBITS, lrx); }
-inline void rrxen(char *n) { rxen(n, MAXBITS, rrx); }
-inline void lrxde(char *n) { rxde(n, 1, lrx); }
-inline void rrxde(char *n) { rxde(n, 1, rrx); }
+inline void lr(char *n, char l) {
+    unsigned char m;
+    if(l < 8) {
+        m = ((1 << l) - 1) << (8 - 2*l);
+        *n = (*n&~m)|((*n^((*n&(m<<l))>>l))&m);
+    } else {
+        l /= 8;
+        for(m = 0; m < l; ++m) {
+            n[m+l] ^= n[m];
+        }
+    }
+}
+
+inline void rr(char *n, char l) {
+    unsigned char m;
+    if(l < 8) {
+        m = (1 << l) - 1;
+        *n = (*n&~m)|((*n^((*n&(m<<l))>>l))&m);
+    } else {
+        l /= 8;
+        for(m = 8 - 2*l; m < 8 - l; ++m) {
+            n[m+l] ^= n[m];
+        }
+    }
+}
+
+inline void gll(char *n) { grx(n, 1, ll); }
+inline void grl(char *n) { grx(n, 1, rl); }
+inline void glr(char *n) { grx(n, 1, lr); }
+inline void grr(char *n) { grx(n, 1, rr); }
+inline void sll(char *n) { srx(n, MAXBITS, ll); }
+inline void srl(char *n) { srx(n, MAXBITS, rl); }
+inline void slr(char *n) { srx(n, MAXBITS, lr); }
+inline void srr(char *n) { srx(n, MAXBITS, rr); }
 
 void encrypt(char *in, char *out, char *key) {
     int i, j, len;
@@ -61,9 +93,9 @@ void encrypt(char *in, char *out, char *key) {
         }
         for(j = 0; j < 8; ++j) {
             if((key[i] >> j) & 1) {
-                lrxen(out);
+                slr(out);
             } else {
-                rrxen(out);
+                srl(out);
             }
         }
         for(j = 0; j < 8; ++j) {
@@ -87,9 +119,9 @@ void decrypt(char *in, char *out, char *key) {
         }
         for(j = 0; j < 8; ++j) {
             if((key[i] >> (7-j)) & 1) {
-                lrxde(out);
+                glr(out);
             } else {
-                rrxde(out);
+                grl(out);
             }
         }
         for(j = 0; j < 8; ++j) {
