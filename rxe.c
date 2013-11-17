@@ -1,5 +1,4 @@
 #include "rxe.h"
-#include <stdio.h>
 #include <string.h>
 
 inline void srx(char *n, char l, void (*fn)(char *, char)) {
@@ -80,54 +79,45 @@ inline void slr(char *n) { srx(n, MAXBITS, lr); }
 inline void srr(char *n) { srx(n, MAXBITS, rr); }
 
 void encrypt(char *in, char *out, char *key) {
-    int i, j, len;
-    for(j = 0; j < 8; ++j) {
-        out[j] = in[j];
-    }
+    static void (*fns[8])(char *) = {gll, grl, glr, grr, sll, srl, slr, srr};
+    int i, j, k, len;
     len = strlen(key);
+    for(i = 0; i < MAXBYTES; ++i) {
+        out[i] = in[i];
+    }
     for(i = 0; i < len; ++i) {
-        for(j = 0; j < 8; ++j) {
-            if((key[i] >> j) & 1) {
-                out[j] ^= key[i];
-            }
+        k = 0;
+        for(j = 0; j < MAXBYTES; ++j) {
+            out[j] ^= ((key[i] >> j) & 1 ? key[i] : 0);
         }
-        for(j = 0; j < 8; ++j) {
-            if((key[i] >> j) & 1) {
-                slr(out);
-            } else {
-                srl(out);
-            }
+        for(j = 0; j < MAXBYTES; ++j) {
+            fns[k](out);
+            k += (key[i] >> j) & 1;
         }
-        for(j = 0; j < 8; ++j) {
-            if((key[i] >> j) & 1) {
-                out[j] ^= key[i];
-            }
+        for(j = 0; j < MAXBYTES; ++j) {
+            out[j] ^= ((key[i] >> j) & 1 ? key[i] : 0);
         }
     }
 }
 
 void decrypt(char *in, char *out, char *key) {
-    int i, j;
-    for(j = 0; j < 8; ++j) {
-        out[j] = in[j];
+    static void (*fns[8])(char *) = {sll, srl, slr, srr, gll, grl, glr, grr};
+    int i, j, k;
+    for(i = 0; i < MAXBYTES; ++i) {
+        out[i] = in[i];
     }
     for(i = strlen(key) - 1; i >= 0; --i) {
-        for(j = 0; j < 8; ++j) {
-            if((key[i] >> j) & 1) {
-                out[j] ^= key[i];
-            }
+        k = 0;
+        for(j = 0; j < MAXBYTES; ++j) {
+            k += (key[i] >> j) & 1;
+            out[j] ^= ((key[i] >> j) & 1 ? key[i] : 0);
         }
-        for(j = 0; j < 8; ++j) {
-            if((key[i] >> (7-j)) & 1) {
-                glr(out);
-            } else {
-                grl(out);
-            }
+        for(j = 0; j < MAXBYTES; ++j) {
+            k -= (key[i] >> (7-j)) & 1;
+            fns[k](out);
         }
-        for(j = 0; j < 8; ++j) {
-            if((key[i] >> j) & 1) {
-                out[j] ^= key[i];
-            }
+        for(j = 0; j < MAXBYTES; ++j) {
+            out[j] ^= ((key[i] >> j) & 1 ? key[i] : 0);
         }
     }
 }
