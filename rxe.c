@@ -78,9 +78,11 @@ inline void srl(char *n) { srx(n, MAXBITS, rl); }
 inline void slr(char *n) { srx(n, MAXBITS, lr); }
 inline void srr(char *n) { srx(n, MAXBITS, rr); }
 
+static void(*fns[8])(char *) = {gll, grl, glr, grr, sll, srl, slr, srr};
+
 void encrypt(char *in, char *out, char *key) {
-    static void (*fns[8])(char *) = {gll, grl, glr, grr, sll, srl, slr, srr};
-    int i, j, k, len;
+    int i, len;
+    unsigned char j, k;
     len = strlen(key);
     for(i = 0; i < MAXBYTES; ++i) {
         out[i] = in[i];
@@ -88,36 +90,39 @@ void encrypt(char *in, char *out, char *key) {
     for(i = 0; i < len; ++i) {
         k = 0;
         for(j = 0; j < MAXBYTES; ++j) {
-            out[j] ^= ((key[i] >> j) & 1 ? key[i] : 0);
+            out[j] ^= key[i]*((key[i] >> j) & 1);
         }
         for(j = 0; j < MAXBYTES; ++j) {
+            k += (~key[i] >> j) & 1;
+            k %= 8;
             fns[k](out);
             k += (key[i] >> j) & 1;
         }
         for(j = 0; j < MAXBYTES; ++j) {
-            out[j] ^= ((key[i] >> j) & 1 ? key[i] : 0);
+            out[j] ^= key[i]*((key[i] >> j) & 1);
         }
     }
 }
 
 void decrypt(char *in, char *out, char *key) {
-    static void (*fns[8])(char *) = {sll, srl, slr, srr, gll, grl, glr, grr};
-    int i, j, k;
+    int i;
+    unsigned char j, k;
     for(i = 0; i < MAXBYTES; ++i) {
         out[i] = in[i];
     }
     for(i = strlen(key) - 1; i >= 0; --i) {
-        k = 0;
+        k = 4;
         for(j = 0; j < MAXBYTES; ++j) {
-            k += (key[i] >> j) & 1;
-            out[j] ^= ((key[i] >> j) & 1 ? key[i] : 0);
+            out[j] ^= key[i]*((key[i] >> j) & 1);
         }
         for(j = 0; j < MAXBYTES; ++j) {
             k -= (key[i] >> (7-j)) & 1;
+            k %= 8;
             fns[k](out);
+            k -= (~key[i] >> (7-j)) & 1;
         }
         for(j = 0; j < MAXBYTES; ++j) {
-            out[j] ^= ((key[i] >> j) & 1 ? key[i] : 0);
+            out[j] ^= key[i]*((key[i] >> j) & 1);
         }
     }
 }
