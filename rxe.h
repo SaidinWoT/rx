@@ -2,9 +2,9 @@
 #define __RXE_H
 
 #define MAXBYTES 8
-#define MAXBITS 64
+#define MAXBITS MAXBYTES*8
 
-void encrypt(char*, char *, char *);
-void decrypt(char*, char *, char *);
+void encrypt(char* in, char *out, char *key);
+void decrypt(char* in, char *out, char *key);
 
 #endif /* !__RXE_H */
