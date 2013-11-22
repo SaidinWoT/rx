@@ -5,7 +5,6 @@
 int main(int argc, char **argv) {
     FILE *in, *out;
     char *buf = calloc(MAXBYTES, sizeof(char));
-    char *fer = calloc(MAXBYTES, sizeof(char));
     in = fopen(argv[2], "r");
     if(argc > 3) {
         out = fopen(argv[3], "w");
@@ -18,8 +17,8 @@ int main(int argc, char **argv) {
             break;
         }
 
-        decrypt(buf, fer, argv[1]);
-        fwrite(fer, 1, MAXBYTES, out);
+        decrypt(buf, argv[1]);
+        fwrite(buf, 1, MAXBYTES, out);
     }
 
     fclose(in);

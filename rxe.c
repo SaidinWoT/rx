@@ -80,49 +80,42 @@ inline void srr(char *n) { srx(n, MAXBITS, rr); }
 
 static void(*fns[8])(char *) = {gll, grl, glr, grr, sll, srl, slr, srr};
 
-void encrypt(char *in, char *out, char *key) {
-    int i, len;
-    unsigned char j, k;
-    len = strlen(key);
-    for(i = 0; i < MAXBYTES; ++i) {
-        out[i] = in[i];
-    }
-    for(i = 0; i < len; ++i) {
-        k = 0;
-        for(j = 0; j < MAXBYTES; ++j) {
-            out[j] ^= key[i]*((key[i] >> j) & 1);
-        }
-        for(j = 0; j < MAXBYTES; ++j) {
-            k += (~key[i] >> j) & 1;
-            k %= 8;
-            fns[k](out);
-            k += (key[i] >> j) & 1;
-        }
-        for(j = 0; j < MAXBYTES; ++j) {
-            out[j] ^= key[i]*((key[i] >> j) & 1);
-        }
+inline void mixin(char *buf, char keybyte) {
+    unsigned char j;
+    for(j = 0; j < MAXBYTES; ++j) {
+        buf[j] ^= keybyte*((keybyte >> j) & 1);
     }
 }
 
-void decrypt(char *in, char *out, char *key) {
+void encrypt(char *buf, char *key) {
+    int i, len;
+    unsigned char j, k;
+    len = strlen(key);
+    for(i = 0; i < len; ++i) {
+        k = 0;
+        mixin(buf, key[i]);
+        for(j = 0; j < MAXBYTES; ++j) {
+            k += (~key[i] >> j) & 1;
+            k %= 8;
+            fns[k](buf);
+            k += (key[i] >> j) & 1;
+        }
+        mixin(buf, key[i]);
+    }
+}
+
+void decrypt(char *buf, char *key) {
     int i;
     unsigned char j, k;
-    for(i = 0; i < MAXBYTES; ++i) {
-        out[i] = in[i];
-    }
     for(i = strlen(key) - 1; i >= 0; --i) {
         k = 4;
-        for(j = 0; j < MAXBYTES; ++j) {
-            out[j] ^= key[i]*((key[i] >> j) & 1);
-        }
+        mixin(buf, key[i]);
         for(j = 0; j < MAXBYTES; ++j) {
             k -= (key[i] >> (7-j)) & 1;
             k %= 8;
-            fns[k](out);
+            fns[k](buf);
             k -= (~key[i] >> (7-j)) & 1;
         }
-        for(j = 0; j < MAXBYTES; ++j) {
-            out[j] ^= key[i]*((key[i] >> j) & 1);
-        }
+        mixin(buf, key[i]);
     }
 }

@@ -4,7 +4,7 @@
 #define MAXBYTES 8
 #define MAXBITS MAXBYTES*8
 
-void encrypt(char* in, char *out, char *key);
-void decrypt(char* in, char *out, char *key);
+void encrypt(char* buf, char *key);
+void decrypt(char* buf, char *key);
 
 #endif /* !__RXE_H */

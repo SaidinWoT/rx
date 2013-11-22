@@ -6,7 +6,6 @@ int main(int argc, char **argv) {
     FILE *in, *out;
     unsigned char n;
     char *buf = calloc(MAXBYTES, sizeof(char));
-    char *fer = calloc(MAXBYTES, sizeof(char));
     in = fopen(argv[2], "r");
     if(argc > 3) {
         out = fopen(argv[3], "w");
@@ -20,8 +19,8 @@ int main(int argc, char **argv) {
             buf[n++] = '\0';
         }
 
-        encrypt(buf, fer, argv[1]);
-        fwrite(fer, 1, MAXBYTES, out);
+        encrypt(buf, argv[1]);
+        fwrite(buf, 1, MAXBYTES, out);
     }
 
     fclose(in);
