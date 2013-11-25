@@ -4,7 +4,7 @@
 
 int main(int argc, char **argv) {
     FILE *in, *out;
-    unsigned char n;
+    char n, l;
     char *buf = calloc(MAXBYTES, sizeof(char));
     in = fopen(argv[2], "r");
     if(argc > 3) {
@@ -15,8 +15,16 @@ int main(int argc, char **argv) {
     
     while(!feof(in) && !ferror(in)) {
         n = fread(buf, 1, MAXBYTES, in);
-        while(n < MAXBYTES) {
-            buf[n++] = '\0';
+        if(feof(in)) {
+            l = (char)((short)(5 * buf[n-1] + 1) & 0xFF);
+            if(n == MAXBYTES) {
+                encrypt(buf, argv[1]);
+                fwrite(buf, 1, MAXBYTES, out);
+                n = 0;
+            }
+            while(n < MAXBYTES) {
+                buf[n++] = l;
+            }
         }
 
         encrypt(buf, argv[1]);
