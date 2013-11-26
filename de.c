@@ -33,6 +33,7 @@ int main(int argc, char **argv) {
         fwrite(buf, 1, MAXBYTES, out);
     }
 
+    free(buf);
     fclose(in);
     fclose(out);
 
