@@ -16,21 +16,19 @@ int main(int argc, char **argv) {
     
     while(!feof(in) && !ferror(in)) {
         n = fread(buf, 1, MAXBYTES, in);
+
+        decrypt(buf, argv[1]);
+
         l = fgetc(in);
         if(l == EOF) {
-            decrypt(buf, argv[1]);
             l = buf[--n];
             while(n >= 0 && buf[n] == (char)l)
                 --n;
-            if(++n != 0) {
-                fwrite(buf, 1, n, out);
-            }
-            break;
+            ++n;
         }
         ungetc(l, in);
 
-        decrypt(buf, argv[1]);
-        fwrite(buf, 1, MAXBYTES, out);
+        fwrite(buf, 1, n, out);
     }
 
     free(buf);
