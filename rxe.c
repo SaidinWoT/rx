@@ -119,3 +119,29 @@ void decrypt(char *buf, char *key) {
         mixin(buf, key[i]);
     }
 }
+
+char en(char *buf, char *key, int len, int atEOF) {
+    int n = (len == MAXBYTES ? 2*MAXBYTES : MAXBYTES);
+    char l;
+    if(atEOF) {
+        l = (char)((short)(5 * buf[len-1] + 1) & 0xFF);
+        while(len < n) {
+            buf[len++] = l;
+        }
+        encrypt(buf + MAXBYTES, key);
+    }
+    encrypt(buf, key);
+    return len;
+}
+
+char de(char *buf, char *key, int len, int atEOF) {
+    char l;
+    decrypt(buf, key);
+    if(atEOF) {
+        l = buf[--len];
+        while(len-- && buf[len] == (char)l)
+            ;
+        ++len;
+    }
+    return len;
+}

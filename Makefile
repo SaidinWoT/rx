@@ -1,3 +1,3 @@
+cc=gcc
 default:
-	gcc en.c rxe.c  -o ./en
-	gcc de.c rxe.c  -o ./de
+	$(cc) crypt.c rxe.c -o ./rx

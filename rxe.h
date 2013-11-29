@@ -6,5 +6,7 @@
 
 void encrypt(char* buf, char *key);
 void decrypt(char* buf, char *key);
+char en(char *buf, char *key, int len, int nxtChr);
+char de(char *buf, char *key, int len, int nxtChr);
 
 #endif /* !__RXE_H */
