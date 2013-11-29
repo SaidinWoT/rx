@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
     }
     argv += optind;
     argc -= optind;
-    buf = calloc(MAXBYTES, sizeof(char));
+    buf = calloc(2*MAXBYTES, sizeof(char));
     in = fopen(argv[1], "r");
     out = argc > 2 ? fopen(argv[2], "w") : stdout;
 
